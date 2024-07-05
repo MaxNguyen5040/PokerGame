@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import random
+from bots import PokerBot, bots
 
 app = Flask(__name__)
 suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
@@ -114,6 +115,11 @@ def end_round():
     pot_size = 0
     return jsonify({'message': 'Round ended. Starting a new round...', 'player_hand': player_hand, 'community_cards': community_cards, 'pot_size': pot_size})
 
+@app.route('/start_bot_actions', methods=['POST'])
+def start_bot_actions():
+    bot_actions()
+    return jsonify({'message': 'Bots have made their moves.', 'pot_size': pot_size})
+
 #_________________Poker Game methods____________________
 def create_deck():
     return [(rank, suit) for suit in suits for rank in ranks]
@@ -128,6 +134,17 @@ def evaluate_winner(player_hand, community_cards):
     player_hand_type = classify_hand(combined_hand)
     return f'Player with {player_hand_type}'
 
+def bot_actions():
+    for bot in bots:
+        action = bot.decide_action(game_state={})
+        # Example: Handle bot actions (simplified)
+        if action == 'raise':
+            bot.adjust_chips(-10)  # Decrease chips for raising
+            pot_size += 10  # Add to pot
+        elif action == 'call':
+            bot.adjust_chips(-5)  # Decrease chips for calling
+            pot_size += 5  # Add to pot
+        # Other actions: check, fold
 
 def start_round():
     player_hand = deal_cards(2)  # Function to deal cards
