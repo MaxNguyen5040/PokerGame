@@ -5,8 +5,9 @@ app = Flask(__name__)
 suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 pot = 0
+global player_hands
 
-#App routes
+#_______________________App routes______________________
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -47,8 +48,25 @@ def turn():
 def river():
     return 'River round.'
 
-#Poker Game methods
+current_player = 1
+round_phase = 'deal'
 
+@app.route('/next_turn')
+def next_turn():
+    global current_player, round_phase
+    current_player = 2 if current_player == 1 else 1
+    if round_phase == 'deal':
+        round_phase = 'flop'
+    elif round_phase == 'flop':
+        round_phase = 'turn'
+    elif round_phase == 'turn':
+        round_phase = 'river'
+    elif round_phase == 'river':
+        round_phase = 'end'
+    return f'Player {current_player}, it\'s your turn. Round phase: {round_phase}.'
+
+
+#_________________Poker Game methods____________________
 def create_deck():
     return [(rank, suit) for suit in suits for rank in ranks]
 
@@ -57,6 +75,13 @@ def deal_cards(num_players):
     random.shuffle(deck)
     return [deck[i::num_players] for i in range(num_players)]
 
+def determine_winner(player_hands):
+    winner_id = 0
+    winner_hand_rank = 'Straight'
+    return jsonify({
+        'player_id': winner_id + 1,
+        'hand_rank': winner_hand_rank
+    })
 
 
 if __name__ == '__main__':
