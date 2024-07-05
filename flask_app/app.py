@@ -104,6 +104,12 @@ def start_new_round():
     game_state = start_round()
     return jsonify(game_state)
 
+@app.route('/determine_winner', methods=['POST'])
+def determine_winner():
+    winner = evaluate_winner(player_hand, community_cards)
+    message = f'{winner} wins the round!'
+    return jsonify({'message': message, 'winner': winner})
+
 #_________________Poker Game methods____________________
 def create_deck():
     return [(rank, suit) for suit in suits for rank in ranks]
@@ -117,13 +123,8 @@ def ai_action(player_id):
     # Add logic for AI player actions (fold, bet, etc.)
     return 'AI player folds.'
 
-def determine_winner(player_hands):
-    winner_id = 0
-    winner_hand_rank = 'Straight'
-    return jsonify({
-        'player_id': winner_id + 1,
-        'hand_rank': winner_hand_rank
-    })
+def evaluate_winner(player_hand, community_cards):
+    return random.choice(['Player 1', 'Player 2', 'Player 3'])
 
 def start_round():
     player_hand = deal_cards(2)  # Function to deal cards
@@ -131,6 +132,26 @@ def start_round():
     pot_size = 0  # Reset pot size
     return {'player_hand': player_hand, 'community_cards': community_cards, 'pot_size': pot_size}
 
+def classify_hand(hand):
+    # Simplified example logic to classify hand
+    ranks = '23456789TJQKA'
+    suits = 'HDCS'
+    rank_count = {rank: sum(card[0] == rank for card in hand) for rank in ranks}
+    suit_count = {suit: sum(card[1] == suit for card in hand) for suit in suits}
+
+    if 5 in suit_count.values():
+        return 'Flush'
+    if 4 in rank_count.values():
+        return 'Four of a Kind'
+    if 3 in rank_count.values() and 2 in rank_count.values():
+        return 'Full House'
+    if 3 in rank_count.values():
+        return 'Three of a Kind'
+    if list(rank_count.values()).count(2) == 2:
+        return 'Two Pair'
+    if 2 in rank_count.values():
+        return 'Pair'
+    return 'High Card'
 
 if __name__ == '__main__':
     app.run(debug=True)
