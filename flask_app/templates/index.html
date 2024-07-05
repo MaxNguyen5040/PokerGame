@@ -12,5 +12,14 @@
         <p>Player 1 Hand: {{ player_hands[0] }}</p>
         <p>Player 2 Hand: {{ player_hands[1] }}</p>
     </div>
+    <div id="player-actions">
+        <button onclick="fold(1)">Fold</button>
+        <button onclick="bet(1, 10)">Bet $10</button>
+        <button onclick="nextTurn()">Next Turn</button>
+    </div>
+    <div id="game-status">
+        <p>Current round: {{ round_phase }}</p>
+        <p id="pot">Current pot: ${{ pot }}</p>
+        <p id="winner"></p>
 </body>
 </html>
