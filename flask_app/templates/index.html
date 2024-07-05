@@ -1,70 +1,94 @@
-<!DOCTYPE html>
+<!-- flask_app/templates/index.html -->
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poker Game</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
-    <h1>Welcome to Poker Game!</h1>
-    <div id="player-hands">
-        <p>Player 1 Hand: {{ player_hands[0] }}</p>
-        <p>Player 2 Hand: {{ player_hands[1] }}</p>
+    <h1>Poker Game</h1>
+    <div id="game">
+        <div id="players">
+            <!-- Display player hands -->
+            <div id="player1-hand">
+                <img src="{{ url_for('static', filename='card_back.png') }}" alt="Card">
+                <img src="{{ url_for('static', filename='card_back.png') }}" alt="Card">
+            </div>
+            <!-- Display community cards -->
+            <div id="community-cards">
+                <img src="{{ url_for('static', filename='card_back.png') }}" alt="Card">
+                <img src="{{ url_for('static', filename='card_back.png') }}" alt="Card">
+                <img src="{{ url_for('static', filename='card_back.png') }}" alt="Card">
+                <img src="{{ url_for('static', filename='card_back.png') }}" alt="Card">
+                <img src="{{ url_for('static', filename='card_back.png') }}" alt="Card">
+            </div>
+        </div>
+        <!-- Betting controls -->
+        <div id="bet-controls">
+            <input type="number" id="bet-amount" placeholder="Enter bet amount">
+            <button onclick="placeBet()">Bet</button>
+            <button onclick="fold()">Fold</button>
+        </div>
+        <!-- Pot size -->
+        <div id="pot">
+            Pot: $<span id="pot-size">0</span>
+        </div>
+        <!-- Messages -->
+        <div id="messages">
+            <p id="game-message">Welcome to the game!</p>
+        </div>
     </div>
-    <div id="player-actions">
-        <button onclick="fold(1)">Fold</button>
-        <button onclick="bet(1, 10)">Bet $10</button>
-        <button onclick="nextTurn()">Next Turn</button>
-    </div>
-    <div id="game-status">
-        <p>Current round: {{ round_phase }}</p>
-        <p id="pot">Current pot: ${{ pot }}</p>
-        <p id="winner"></p>
-    </div>
+
     <script>
-        function nextTurn() {
-            fetch('/next_turn')
-                .then(response => response.text())
-                .then(message => {
-                    updateGameState();
-                    document.getElementById('game-status').innerHTML += `<p>${message}</p>`;
-                });
-        }
-        
-        function fold(playerId) {
-            fetch(`/fold/${playerId}`)
-                .then(response => response.text())
-                .then(message => console.log(message));
-        }
-
-        function bet(playerId, amount) {
-            fetch(`/bet/${playerId}/${amount}`)
-                .then(response => response.text())
-                .then(message => console.log(message));
-        }
-        
-        function updateGameState() {
-            fetch('/update_game_state')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('player-hands').innerHTML = `
-                        <p>Player 1 Hand: ${data.player_hands[0]}</p>
-                        <p>Player 2 Hand: ${data.player_hands[1]}</p>
-                    `;
-                    document.getElementById('pot').textContent = `Current pot: $${data.pot}`;
-                    document.getElementById('game-status').innerHTML += `<p>Current round: ${data.round_phase}</p>`;
-                    if (data.round_phase === 'end') {
-                        fetch('/winner')
-                            .then(response => response.text())
-                            .then(winnerMessage => {
-                                document.getElementById('winner').textContent = winnerMessage;
-                            });
-                    }
-                });
+        // Function to place a bet via AJAX
+        function placeBet() {
+            var amount = $('#bet-amount').val();
+            $.ajax({
+                url: '/bet',
+                type: 'POST',
+                data: { amount: amount },
+                success: function(response) {
+                    $('#game-message').text(response.message);
+                    updateGameState(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
         }
 
-        setInterval(updateGameState, 2000);  // Update every 2 seconds
+        // Function to fold via AJAX
+        function fold() {
+            $.ajax({
+                url: '/fold',
+                type: 'POST',
+                success: function(response) {
+                    $('#game-message').text(response.message);
+                    updateGameState(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        // Update game state based on server response
+        function updateGameState(response) {
+            $('#player1-hand').empty();
+            response.player_hand.forEach(card => {
+                $('#player1-hand').append(`<img src="/static/${card}.png" alt="Card">`);
+            });
+
+            $('#community-cards').empty();
+            response.community_cards.forEach(card => {
+                $('#community-cards').append(`<img src="/static/${card}.png" alt="Card">`);
+            });
+
+            $('#pot-size').text(response.pot_size);
+        }
     </script>
 </body>
 </html>

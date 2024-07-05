@@ -6,6 +6,7 @@ suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 pot = 0
 global player_hands
+bet_limit = 100
 
 #_______________________App routes______________________
 @app.route('/')
@@ -23,7 +24,8 @@ def fold(player_id):
 
 @app.route('/bet/<int:amount>')
 def bet(amount):
-    global pot
+    if amount > bet_limit:
+        return f'Error: Bet exceeds limit of ${bet_limit}.'
     pot += amount
     return f'Bet ${amount} added to the pot. Total pot: ${pot}.'
 
@@ -65,6 +67,11 @@ def next_turn():
         round_phase = 'end'
     return f'Player {current_player}, it\'s your turn. Round phase: {round_phase}.'
 
+@app.route('/ai_turn/<int:player_id>')
+def ai_turn(player_id):
+    ai_action_result = ai_action(player_id)
+    return ai_action_result
+
 
 #_________________Poker Game methods____________________
 def create_deck():
@@ -74,6 +81,10 @@ def deal_cards(num_players):
     deck = create_deck()
     random.shuffle(deck)
     return [deck[i::num_players] for i in range(num_players)]
+
+def ai_action(player_id):
+    # Add logic for AI player actions (fold, bet, etc.)
+    return 'AI player folds.'
 
 def determine_winner(player_hands):
     winner_id = 0
