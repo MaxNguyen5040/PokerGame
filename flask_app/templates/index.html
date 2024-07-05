@@ -21,5 +21,50 @@
         <p>Current round: {{ round_phase }}</p>
         <p id="pot">Current pot: ${{ pot }}</p>
         <p id="winner"></p>
+    </div>
+    <script>
+        function nextTurn() {
+            fetch('/next_turn')
+                .then(response => response.text())
+                .then(message => {
+                    updateGameState();
+                    document.getElementById('game-status').innerHTML += `<p>${message}</p>`;
+                });
+        }
+        
+        function fold(playerId) {
+            fetch(`/fold/${playerId}`)
+                .then(response => response.text())
+                .then(message => console.log(message));
+        }
+
+        function bet(playerId, amount) {
+            fetch(`/bet/${playerId}/${amount}`)
+                .then(response => response.text())
+                .then(message => console.log(message));
+        }
+        
+        function updateGameState() {
+            fetch('/update_game_state')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('player-hands').innerHTML = `
+                        <p>Player 1 Hand: ${data.player_hands[0]}</p>
+                        <p>Player 2 Hand: ${data.player_hands[1]}</p>
+                    `;
+                    document.getElementById('pot').textContent = `Current pot: $${data.pot}`;
+                    document.getElementById('game-status').innerHTML += `<p>Current round: ${data.round_phase}</p>`;
+                    if (data.round_phase === 'end') {
+                        fetch('/winner')
+                            .then(response => response.text())
+                            .then(winnerMessage => {
+                                document.getElementById('winner').textContent = winnerMessage;
+                            });
+                    }
+                });
+        }
+
+        setInterval(updateGameState, 2000);  // Update every 2 seconds
+    </script>
 </body>
 </html>
