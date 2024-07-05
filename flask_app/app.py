@@ -94,11 +94,6 @@ def player_action():
         message = f'You raised by ${amount}.'
     return jsonify({'message': message, 'pot_size': pot_size})
 
-@app.route('/ai_turn/<int:player_id>')
-def ai_turn(player_id):
-    ai_action_result = ai_action(player_id)
-    return ai_action_result
-
 @app.route('/start_round', methods=['POST'])
 def start_new_round():
     game_state = start_round()
@@ -110,6 +105,15 @@ def determine_winner():
     message = f'{winner} wins the round!'
     return jsonify({'message': message, 'winner': winner})
 
+@app.route('/end_round', methods=['POST'])
+def end_round():
+    global player_hand, community_cards, pot_size
+    # Example: Reset player hands, community cards, and pot size for the next round
+    player_hand = []
+    community_cards = []
+    pot_size = 0
+    return jsonify({'message': 'Round ended. Starting a new round...', 'player_hand': player_hand, 'community_cards': community_cards, 'pot_size': pot_size})
+
 #_________________Poker Game methods____________________
 def create_deck():
     return [(rank, suit) for suit in suits for rank in ranks]
@@ -119,12 +123,11 @@ def deal_cards(num_players):
     random.shuffle(deck)
     return [deck[i::num_players] for i in range(num_players)]
 
-def ai_action(player_id):
-    # Add logic for AI player actions (fold, bet, etc.)
-    return 'AI player folds.'
-
 def evaluate_winner(player_hand, community_cards):
-    return random.choice(['Player 1', 'Player 2', 'Player 3'])
+    combined_hand = player_hand + community_cards
+    player_hand_type = classify_hand(combined_hand)
+    return f'Player with {player_hand_type}'
+
 
 def start_round():
     player_hand = deal_cards(2)  # Function to deal cards
