@@ -78,6 +78,22 @@ def next_turn():
         round_phase = 'end'
     return f'Player {current_player}, it\'s your turn. Round phase: {round_phase}.'
 
+@app.route('/player_action', methods=['POST'])
+def player_action():
+    action = request.form['action']
+    global pot_size
+    if action == 'check':
+        message = 'You checked.'
+    elif action == 'call':
+        # Example: Match current bet amount, deduct from player's funds
+        message = 'You called.'
+    elif action == 'raise':
+        amount = int(request.form['amount'])
+        # Example: Increase the bet amount, deduct from player's funds
+        pot_size += amount
+        message = f'You raised by ${amount}.'
+    return jsonify({'message': message, 'pot_size': pot_size})
+
 @app.route('/ai_turn/<int:player_id>')
 def ai_turn(player_id):
     ai_action_result = ai_action(player_id)

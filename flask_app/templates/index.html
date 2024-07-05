@@ -43,7 +43,6 @@
     </div>
 
     <script>
-        // Function to place a bet via AJAX
         function placeBet() {
             var amount = $('#bet-amount').val();
             $.ajax({
@@ -60,7 +59,6 @@
             });
         }
 
-        // Function to fold via AJAX
         function fold() {
             $.ajax({
                 url: '/fold',
@@ -75,7 +73,21 @@
             });
         }
 
-        // Update game state based on server response
+        function check() {
+            $.ajax({
+                url: '/player_action',
+                type: 'POST',
+                data: { action: 'check' },
+                success: function(response) {
+                    $('#game-message').text(response.message);
+                    updatePotSize(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
         function updateGameState(response) {
             $('#player1-hand').empty();
             response.player_hand.forEach(card => {
