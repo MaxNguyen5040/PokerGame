@@ -88,19 +88,54 @@
             });
         }
 
-        function updateGameState(response) {
-            $('#player1-hand').empty();
-            response.player_hand.forEach(card => {
-                $('#player1-hand').append(`<img src="/static/${card}.png" alt="Card">`);
-            });
 
-            $('#community-cards').empty();
-            response.community_cards.forEach(card => {
-                $('#community-cards').append(`<img src="/static/${card}.png" alt="Card">`);
+        function call() {
+            $.ajax({
+                url: '/player_action',
+                type: 'POST',
+                data: { action: 'call' },
+                success: function(response) {
+                    $('#game-message').text(response.message);
+                    updatePotSize(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
             });
+        }
 
+        function raise() {
+            var amount = $('#raise-amount').val();
+            $.ajax({
+                url: '/player_action',
+                type: 'POST',
+                data: { action: 'raise', amount: amount },
+                success: function(response) {
+                    $('#game-message').text(response.message);
+                    updatePotSize(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        function updatePotSize(response) {
             $('#pot-size').text(response.pot_size);
         }
+                function updateGameState(response) {
+                    $('#player1-hand').empty();
+                    response.player_hand.forEach(card => {
+                        $('#player1-hand').append(`<img src="/static/${card}.png" alt="Card">`);
+                    });
+
+                    $('#community-cards').empty();
+                    response.community_cards.forEach(card => {
+                        $('#community-cards').append(`<img src="/static/${card}.png" alt="Card">`);
+                    });
+
+                    $('#pot-size').text(response.pot_size);
+                }
     </script>
 </body>
 </html>
