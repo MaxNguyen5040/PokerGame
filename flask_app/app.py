@@ -1,12 +1,14 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 import random
 
 app = Flask(__name__)
 suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
 ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
 pot = 0
-global player_hands
+global player_hand1, player_hand2
 bet_limit = 100
+current_player = 1
+round_phase = 'deal'
 
 #_______________________App routes______________________
 @app.route('/')
@@ -18,9 +20,21 @@ def deal():
     players_hands = deal_cards(2)  # deal to 2 players
     return {'players_hands': players_hands}
 
-@app.route('/fold/<int:player_id>')
-def fold(player_id):
-    return f'Player {player_id} folds.'
+def deal_cards(num_cards):
+    deck = ['2H', '3H', '4H', '5H', '6H', '7H', '8H', '9H', 'TH', 'JH', 'QH', 'KH', 'AH',
+            '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', 'TD', 'JD', 'QD', 'KD', 'AD',
+            '2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', 'TC', 'JC', 'QC', 'KC', 'AC',
+            '2S', '3S', '4S', '5S', '6S', '7S', '8S', '9S', 'TS', 'JS', 'QS', 'KS', 'AS']
+    return random.sample(deck, num_cards)
+
+@app.route('/fold', methods=['POST'])
+def fold():
+    player_hand = []
+    community_cards = []
+    pot_size = 0
+    message = 'You folded.'
+    return jsonify({'message': message, 'player_hand': player_hand, 'community_cards': community_cards, 'pot_size': pot_size})
+
 
 @app.route('/bet/<int:amount>')
 def bet(amount):
@@ -50,9 +64,6 @@ def turn():
 def river():
     return 'River round.'
 
-current_player = 1
-round_phase = 'deal'
-
 @app.route('/next_turn')
 def next_turn():
     global current_player, round_phase
@@ -72,6 +83,10 @@ def ai_turn(player_id):
     ai_action_result = ai_action(player_id)
     return ai_action_result
 
+@app.route('/start_round', methods=['POST'])
+def start_new_round():
+    game_state = start_round()
+    return jsonify(game_state)
 
 #_________________Poker Game methods____________________
 def create_deck():
@@ -93,6 +108,12 @@ def determine_winner(player_hands):
         'player_id': winner_id + 1,
         'hand_rank': winner_hand_rank
     })
+
+def start_round():
+    player_hand = deal_cards(2)  # Function to deal cards
+    community_cards = deal_cards(5)  # Function to deal community cards
+    pot_size = 0  # Reset pot size
+    return {'player_hand': player_hand, 'community_cards': community_cards, 'pot_size': pot_size}
 
 
 if __name__ == '__main__':
