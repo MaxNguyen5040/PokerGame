@@ -40,6 +40,13 @@
         <div id="messages">
             <p id="game-message">Welcome to the game!</p>
         </div>
+        <div id="bot-actions">
+            <h3>Bot Actions</h3>
+            <p id="bot-1-action">Bot 1: Waiting...</p>
+            <p id="bot-2-action">Bot 2: Waiting...</p>
+            <p id="bot-3-action">Bot 3: Waiting...</p>
+            <p id="bot-4-action">Bot 4: Waiting...</p>
+        </div>
     </div>
 
     <script>
@@ -88,6 +95,26 @@
             });
         }
 
+        function updateBotActions(botActions) {
+        for (let i = 0; i < botActions.length; i++) {
+            $(`#bot-${i + 1}-action`).text(`Bot ${i + 1}: ${botActions[i].action}`);
+        }
+        }
+
+        function startBotActions() {
+            $.ajax({
+                url: '/start_bot_actions',
+                type: 'POST',
+                success: function(response) {
+                    console.log(response.message);
+                    updateBotActions(response.botActions);
+                    updatePotSize(response);
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
 
         function call() {
             $.ajax({

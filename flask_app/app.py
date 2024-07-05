@@ -109,7 +109,6 @@ def determine_winner():
 @app.route('/end_round', methods=['POST'])
 def end_round():
     global player_hand, community_cards, pot_size
-    # Example: Reset player hands, community cards, and pot size for the next round
     player_hand = []
     community_cards = []
     pot_size = 0
@@ -137,7 +136,6 @@ def evaluate_winner(player_hand, community_cards):
 def bot_actions():
     for bot in bots:
         action = bot.decide_action(game_state={})
-        # Example: Handle bot actions (simplified)
         if action == 'raise':
             bot.adjust_chips(-10)  # Decrease chips for raising
             pot_size += 10  # Add to pot
