@@ -119,6 +119,16 @@ def start_bot_actions():
     bot_actions()
     return jsonify({'message': 'Bots have made their moves.', 'pot_size': pot_size})
 
+@app.route('/save_game', methods=['POST'])
+def save_game():
+    save_game_state()
+    return jsonify({'message': 'Game state saved'})
+
+@app.route('/load_game', methods=['POST'])
+def load_game():
+    load_game_state()
+    return jsonify({'message': 'Game state loaded'})
+
 #_________________Poker Game methods____________________
 def create_deck():
     return [(rank, suit) for suit in suits for rank in ranks]
@@ -170,6 +180,26 @@ def classify_hand(hand):
     if 2 in rank_count.values():
         return 'Pair'
     return 'High Card'
+
+def save_game_state():
+    game_state = {
+        'players': [{'id': player.id, 'chips': player.chips, 'hand': player.hand} for player in players],
+        'pot_size': pot_size,
+        'current_turn': current_turn,
+    }
+    with open('game_state.json', 'w') as f:
+        json.dump(game_state, f)
+
+def load_game_state():
+    global players, pot_size, current_turn
+    with open('game_state.json', 'r') as f:
+        game_state = json.load(f)
+        for p_data in game_state['players']:
+            player = next(player for player in players if player.id == p_data['id'])
+            player.chips = p_data['chips']
+            player.hand = p_data['hand']
+        pot_size = game_state['pot_size']
+        current_turn = game_state['current_turn']
 
 if __name__ == '__main__':
     app.run(debug=True)
