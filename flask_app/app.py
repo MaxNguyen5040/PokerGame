@@ -201,5 +201,25 @@ def load_game_state():
         pot_size = game_state['pot_size']
         current_turn = game_state['current_turn']
 
+def load_game_state_from_json():
+    global players, pot_size, current_turn
+    with open('game_state.json', 'r') as f:
+        game_state = json.load(f)
+        for p_data in game_state['players']:
+            player = next(player for player in players if player.id == p_data['id'])
+            player.chips = p_data['chips']
+            player.hand = p_data['hand']
+        pot_size = game_state['pot_size']
+        current_turn = game_state['current_turn']
+
+def save_game_state_from_json():
+    game_state = {
+        'players': [{'id': player.id, 'chips': player.chips, 'hand': player.hand} for player in players],
+        'pot_size': pot_size,
+        'current_turn': current_turn,
+    }
+    with open('game_state.json', 'w') as f:
+        json.dump(game_state, f)
+
 if __name__ == '__main__':
     app.run(debug=True)
